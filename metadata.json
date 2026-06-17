@@ -1,5 +1,5 @@
 {
-  "name": "Contextual News Analyzer",
-  "description": "A multimodal news analysis and expansion tool. Input an article, image, or video URL to get a summary and a list of background questions for better context and understanding.",
+  "name": "Henhouse Haven",
+  "description": "A cozy strategy game about keeping chickens of various breeds on a small backyard operation.",
   "requestFramePermissions": []
 }

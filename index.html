@@ -2,39 +2,142 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐔</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contextual News Analyzer</title>
+    <title>Henhouse Haven — Cozy Chicken Keeping</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* Custom scrollbar for webkit browsers */
+      :root {
+        --cream: #F7F0E4;
+        --warm-brown: #5C4A3A;
+        --sage: #7A9E5E;
+        --terracotta: #C4714A;
+      }
+
+      body {
+        font-family: 'DM Sans', system-ui, sans-serif;
+        background: linear-gradient(165deg, #EDE4D3 0%, #E8DCC8 40%, #D4C4A8 100%);
+        min-height: 100vh;
+      }
+
+      .font-serif {
+        font-family: 'Lora', Georgia, serif;
+      }
+
+      .game-shell {
+        color: var(--warm-brown);
+      }
+
+      .status-bar {
+        background: linear-gradient(135deg, rgba(255, 252, 245, 0.95), rgba(245, 235, 220, 0.9));
+        border: 1px solid rgba(180, 140, 90, 0.25);
+        box-shadow: 0 4px 20px rgba(92, 74, 58, 0.08);
+      }
+
+      .panel {
+        background: rgba(255, 252, 245, 0.88);
+        border: 1px solid rgba(180, 140, 90, 0.2);
+        box-shadow: 0 2px 12px rgba(92, 74, 58, 0.06);
+      }
+
+      .panel-title {
+        font-family: 'Lora', Georgia, serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #4A3728;
+        margin-bottom: 0.75rem;
+      }
+
+      .coop-scene {
+        background: #C9B896;
+      }
+
+      .flock-card {
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(180, 140, 90, 0.15);
+      }
+
+      .breed-detail {
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(180, 140, 90, 0.15);
+      }
+
+      .action-btn {
+        background: rgba(255, 255, 255, 0.7);
+        border-color: rgba(180, 140, 90, 0.25);
+      }
+
+      .action-btn:hover:not(:disabled) {
+        background: #FFF9EE;
+        border-color: rgba(180, 140, 90, 0.45);
+        transform: translateY(-1px);
+      }
+
+      .action-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .end-day-btn {
+        background: linear-gradient(135deg, #8B6914, #A67C00);
+        color: #FFF9EE;
+        border: 1px solid #7A5F10;
+      }
+
+      .end-day-btn:hover {
+        filter: brightness(1.08);
+      }
+
+      .supply-btn {
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(180, 140, 90, 0.3);
+        color: #5C4A3A;
+      }
+
+      .supply-btn:hover:not(:disabled) {
+        background: #FFF9EE;
+      }
+
+      .supply-btn:disabled {
+        opacity: 0.4;
+      }
+
+      .buy-btn {
+        background: linear-gradient(135deg, #6B8E5A, #7A9E5E);
+        color: white;
+        border: 1px solid #5A7A4A;
+      }
+
+      .buy-btn:hover:not(:disabled) {
+        filter: brightness(1.05);
+      }
+
+      .upgrade-btn {
+        background: rgba(255, 255, 255, 0.65);
+        border-color: rgba(180, 140, 90, 0.2);
+      }
+
+      .upgrade-btn:hover:not(:disabled) {
+        background: #FFF9EE;
+      }
+
       ::-webkit-scrollbar {
-        width: 12px;
+        width: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #f1f5f9; /* slate-100 */
+        background: rgba(245, 235, 220, 0.5);
+        border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb {
-        background-color: #94a3b8; /* slate-400 */
-        border-radius: 6px;
-        border: 3px solid #f1f5f9; /* slate-100 */
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background-color: #64748b; /* slate-500 */
+        background: rgba(180, 140, 90, 0.4);
+        border-radius: 4px;
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.1.1",
-    "react/": "https://esm.sh/react@^19.1.1/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.15.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.1/"
-  }
-}
-</script>
-</head>
-  <body class="bg-slate-100">
+  </head>
+  <body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

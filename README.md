@@ -1,20 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Henhouse Haven
 
-# Run and deploy your AI Studio app
+A cozy, realistic small-flock chicken keeping strategy game built with React and Vite.
 
-This contains everything you need to run your app locally.
+## Play
 
-View your app in AI Studio: https://ai.studio/apps/drive/1w9-k9FBzjq8SZtOFWBrWBWp1ynzJJpK8
+Manage a backyard egg operation day by day: choose breeds, tend the coop, balance feed costs, and sell eggs at your farm stand.
 
-## Run Locally
+### Features
 
-**Prerequisites:**  Node.js
+- **12 real-world breeds** — Rhode Island Red, Buff Orpington, Marans, Easter Egger, Silkie, and more, each with accurate temperament, climate tolerance, and egg traits
+- **Daily strategy** — four actions per day: clean, feed, water, collect, health checks, and sales
+- **Seasonal simulation** — spring broodiness, summer heat, fall molting, winter laying slowdown
+- **Small-operation economics** — feed bills, premium egg colors, coop upgrades, predator fencing
+- **Auto-save** — progress stored in your browser
 
+## Run locally
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+npm install
+npm run dev
+```
+
+Open the URL shown in the terminal (usually `http://localhost:5173`).
+
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## Goal
+
+Reach 75 reputation, $400 in total revenue, and 120 days of careful flock management to win.
