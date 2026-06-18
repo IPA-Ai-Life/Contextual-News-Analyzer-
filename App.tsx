@@ -1,241 +1,156 @@
+import React, { useCallback, useEffect, useReducer, useState } from 'react';
+import { ActionPanel } from './components/ActionPanel';
+import { AnimalPanel } from './components/AnimalPanel';
+import { BreedingPanel } from './components/BreedingPanel';
+import { EconomyPanel } from './components/EconomyPanel';
+import { EventsLog } from './components/EventsLog';
+import { HomesteadScene } from './components/HomesteadScene';
+import { HousingPanel } from './components/HousingPanel';
+import { LivestockMarket } from './components/LivestockMarket';
+import { StatusBar } from './components/StatusBar';
+import { SAVE_KEY, VICTORY_DAYS, VICTORY_REPUTATION, VICTORY_REVENUE } from './game/constants';
+import { flockProductionEstimate, gameReducer, totalInventoryValue } from './game/engine';
+import { createInitialState } from './game/initialState';
+import { migrateSave } from './game/migration';
+import type { GameAction, GameState } from './types';
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Header } from './components/Header';
-import { UrlInputForm } from './components/UrlInputForm';
-import { AnalysisDisplay } from './components/AnalysisDisplay';
-import { ErrorAlert } from './components/ErrorAlert';
-import { SavedAnalysesList } from './components/SavedAnalysesList';
-import { analyzeContent, getFollowUpAnswer, generateTags, getOpposingViewpoint } from './services/geminiService';
-import type { AnalysisResult, SavedAnalysis, ChatMessage } from './types';
+function loadSavedGame(): GameState | null {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    return migrateSave(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+type Tab = 'chores' | 'market' | 'housing' | 'breeding' | 'economy';
 
 const App: React.FC = () => {
-  const [url, setUrl] = useState<string>('');
-  const [pastedText, setPastedText] = useState<string>('');
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isAnswering, setIsAnswering] = useState<boolean>(false);
-  const [isFetchingOpposing, setIsFetchingOpposing] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
-  const [showDonationOptions, setShowDonationOptions] = useState<boolean>(false);
-
+  const [state, dispatch] = useReducer(gameReducer, undefined, () => loadSavedGame() ?? createInitialState());
+  const [activeTab, setActiveTab] = useState<Tab>('chores');
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('newsAnalyzerAnalyses');
-      if (saved) {
-        setSavedAnalyses(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.error("Failed to load saved analyses:", e);
-      setError("Could not load saved analyses from local storage.");
-    }
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  }, [state]);
 
-    const loadFromHash = () => {
-        try {
-            if (window.location.hash.startsWith('#analysis=')) {
-                const encodedData = window.location.hash.substring('#analysis='.length);
-                const decodedJson = decodeURIComponent(atob(encodedData));
-                const loadedAnalysis: AnalysisResult = JSON.parse(decodedJson);
+  const handleDispatch = useCallback((action: GameAction) => dispatch(action), []);
 
-                if (loadedAnalysis && (loadedAnalysis.url || loadedAnalysis.summary) && loadedAnalysis.summary) {
-                    setAnalysisResult(loadedAnalysis);
-                    setUrl(loadedAnalysis.url.startsWith('Uploaded:') || loadedAnalysis.url === 'Pasted Text' ? '' : loadedAnalysis.url);
-                    if (loadedAnalysis.url === 'Pasted Text') {
-                        // Can't restore pasted text, but can show analysis
-                    } else if (loadedAnalysis.url.startsWith('Uploaded:')) {
-                        // Can't restore file, but can show the analysis
-                    } else {
-                        setUrl(loadedAnalysis.url);
-                    }
-                    window.history.replaceState(null, '', window.location.pathname + window.location.search);
-                }
-            }
-        } catch (e) {
-            console.error("Failed to load analysis from URL hash", e);
-            setError("The shared analysis link is invalid or corrupted.");
-            window.history.replaceState(null, '', window.location.pathname + window.location.search);
-        }
-    };
-    loadFromHash();
-  }, []);
-
-  const handleReset = useCallback(() => {
-    setUrl('');
-    setUploadedFile(null);
-    setPastedText('');
-    setAnalysisResult(null);
-    setIsLoading(false);
-    setIsAnswering(false);
-    setIsFetchingOpposing(false);
-    setError(null);
-  }, []);
-
-  const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isLoading || (!url.trim() && !uploadedFile && !pastedText.trim())) return;
-
-    setIsLoading(true);
-    setError(null);
-    setAnalysisResult(null);
-
-    try {
-      const result = await analyzeContent(url, uploadedFile, pastedText);
-      setAnalysisResult({ ...result, conversation: [] });
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred. Please try again.';
-      setError(`Failed to analyze content. ${errorMessage}`);
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [url, uploadedFile, pastedText, isLoading]);
-
-  const handleAskFollowUp = useCallback(async (question: string) => {
-    if (!analysisResult || isAnswering) return;
-
-    setIsAnswering(true);
-    setError(null);
-    
-    try {
-      const { answer, sources } = await getFollowUpAnswer(analysisResult.url, question);
-      const newChatMessage: ChatMessage = { question, answer, sources };
-      setAnalysisResult(prev => prev ? { ...prev, conversation: [...prev.conversation, newChatMessage] } : null);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      setError(`Failed to get an answer. ${errorMessage}`);
-      console.error(err);
-    } finally {
-      setIsAnswering(false);
-    }
-  }, [analysisResult, isAnswering]);
-
-  const handleFetchOpposingViewpoint = useCallback(async () => {
-    if (!analysisResult || isFetchingOpposing) return;
-
-    setIsFetchingOpposing(true);
-    setError(null);
-    try {
-        const opposingView = await getOpposingViewpoint(analysisResult.url, analysisResult.summary);
-        setAnalysisResult(prev => prev ? { ...prev, opposingViewpoint: opposingView } : null);
-    } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-        setError(`Failed to fetch opposing viewpoints. ${errorMessage}`);
-        console.error(err);
-    } finally {
-        setIsFetchingOpposing(false);
-    }
-  }, [analysisResult, isFetchingOpposing]);
-
-  const handleSaveAnalysis = useCallback(async () => {
-    if (!analysisResult) return;
-
-    if (savedAnalyses.some(saved => saved.url === analysisResult.url && saved.summary === analysisResult.summary)) {
-        alert("This analysis appears to be already saved.");
-        return;
-    }
-
-    const tags = await generateTags(analysisResult.summary, analysisResult.detailedAnalysis, analysisResult.conversation);
-    const newSavedAnalysis: SavedAnalysis = {
-        ...analysisResult,
-        id: crypto.randomUUID(),
-        savedAt: new Date().toISOString(),
-        tags,
-    };
-    
-    const updatedSavedAnalyses = [...savedAnalyses, newSavedAnalysis];
-    setSavedAnalyses(updatedSavedAnalyses);
-    localStorage.setItem('newsAnalyzerAnalyses', JSON.stringify(updatedSavedAnalyses));
-    alert("Analysis saved!");
-  }, [analysisResult, savedAnalyses]);
-  
-  const handleLoadAnalysis = useCallback((id: string) => {
-    const analysisToLoad = savedAnalyses.find(a => a.id === id);
-    if (analysisToLoad) {
-        setAnalysisResult(analysisToLoad);
-        setUrl(analysisToLoad.url.startsWith('Uploaded:') || analysisToLoad.url === 'Pasted Text' ? '' : analysisToLoad.url);
-        setUploadedFile(null);
-        setPastedText('');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [savedAnalyses]);
-
-  const handleDeleteAnalysis = useCallback((id: string) => {
-    if (!window.confirm("Are you sure you want to delete this saved analysis?")) return;
-    const updatedSaved = savedAnalyses.filter(a => a.id !== id);
-    setSavedAnalyses(updatedSaved);
-    localStorage.setItem('newsAnalyzerAnalyses', JSON.stringify(updatedSaved));
-  }, [savedAnalyses]);
-
+  const inventoryValue = totalInventoryValue(state);
+  const production = flockProductionEstimate(state);
 
   return (
-    <div className="min-h-screen text-slate-800 font-sans p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto">
-        <Header />
-        <main className="mt-8">
-          <UrlInputForm
-            url={url}
-            setUrl={setUrl}
-            pastedText={pastedText}
-            setPastedText={setPastedText}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            onReset={handleReset}
-            selectedFile={uploadedFile}
-            onFileChange={setUploadedFile}
-          />
-          {error && <ErrorAlert message={error} />}
-          <AnalysisDisplay
-             result={analysisResult} 
-             isLoading={isLoading}
-             isAnswering={isAnswering}
-             isFetchingOpposing={isFetchingOpposing}
-             onAskFollowUp={handleAskFollowUp}
-             onSave={handleSaveAnalysis}
-             onFetchOpposingViewpoint={handleFetchOpposingViewpoint}
-          />
-          {savedAnalyses.length > 0 && (
-            <SavedAnalysesList
-                analyses={savedAnalyses}
-                onLoad={handleLoadAnalysis}
-                onDelete={handleDeleteAnalysis}
+    <div className="game-shell min-h-screen p-3 sm:p-5 lg:p-6">
+      <div className="max-w-7xl mx-auto space-y-4">
+        <StatusBar state={state} inventoryValue={inventoryValue} productionEstimate={production} />
+
+        {(state.gameOver || state.victory) && (
+          <div className={`rounded-2xl p-6 text-center border-2 ${state.victory ? 'bg-green-50 border-green-300' : 'bg-rose-50 border-rose-300'}`}>
+            <h2 className="text-2xl font-serif text-amber-950 mb-2">
+              {state.victory ? 'A thriving homestead' : 'The farm stands quiet'}
+            </h2>
+            <p className="text-amber-900/80 mb-4">{state.pausedMessage}</p>
+            <p className="text-sm text-amber-700/70 mb-4">
+              {state.day} days · ${state.totalRevenue.toFixed(0)} revenue · {state.animals.length} animals · margin{' '}
+              {state.economy.totalRevenue > 0
+                ? (((state.economy.totalRevenue - state.economy.totalExpenses) / state.economy.totalRevenue) * 100).toFixed(0)
+                : 0}
+              %
+            </p>
+            <button type="button" onClick={() => dispatch({ type: 'NEW_GAME' })} className="end-day-btn px-6 py-2.5 rounded-xl font-semibold">
+              Start fresh
+            </button>
+          </div>
+        )}
+
+        <HomesteadScene state={state} />
+
+        <div className="flex gap-1 lg:hidden bg-white/50 p-1 rounded-xl border border-amber-200/80 overflow-x-auto">
+          {(['chores', 'market', 'housing', 'breeding', 'economy'] as Tab[]).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 min-w-[70px] py-2 rounded-lg text-xs capitalize ${activeTab === tab ? 'bg-amber-200/90 font-semibold' : 'text-amber-800/70'}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-4">
+            <AnimalPanel
+              state={state}
+              onBreakBroodiness={(id) => handleDispatch({ type: 'BREAK_BROODINESS', animalId: id })}
+              onMoveAnimal={(animalId, housingId) => handleDispatch({ type: 'MOVE_ANIMAL', animalId, housingId })}
             />
-          )}
-        </main>
-         <footer className="text-center mt-12 text-xs text-slate-500">
-            <p>Powered by Google Gemini. Analysis may not be perfect. Always cross-reference multiple sources.</p>
-            <p className="mt-1">Developed by Illuminated Pathways Agency</p>
-            <div className="mt-8 border-t border-slate-200 pt-6">
-                <button
-                    onClick={() => setShowDonationOptions(!showDonationOptions)}
-                    className="px-4 py-2 text-sm font-semibold rounded-md text-slate-700 bg-slate-200 hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 focus:ring-offset-slate-100 transition-all duration-200"
-                    aria-expanded={showDonationOptions}
-                >
-                    Help Support This App and others dedicated to finding the truth.
-                </button>
-                {showDonationOptions && (
-                    <div className="mt-4 animate-fade-in">
-                        <p className="text-sm text-slate-600 mb-2">Select an amount to contribute via CashApp:</p>
-                        <div className="flex justify-center items-center gap-2 sm:gap-4">
-                            {[2, 5, 10, 20].map(amount => (
-                                <a 
-                                    key={amount}
-                                    href={`https://cash.app/$amGuss70/${amount}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-6 py-2 text-base font-bold rounded-lg text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-slate-100 transition-colors"
-                                >
-                                    ${amount}
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-                )}
+          </div>
+
+          <div className="lg:col-span-4 space-y-4">
+            <div className={activeTab === 'chores' ? 'block' : 'hidden lg:block'}>
+              <ActionPanel state={state} dispatch={handleDispatch} />
             </div>
+            <div className={activeTab === 'market' ? 'block' : 'hidden lg:block'}>
+              <LivestockMarket state={state} dispatch={handleDispatch} />
+            </div>
+            <div className={activeTab === 'housing' ? 'block' : 'hidden lg:block'}>
+              <HousingPanel state={state} dispatch={handleDispatch} />
+            </div>
+            <div className={activeTab === 'breeding' ? 'block' : 'hidden lg:block'}>
+              <BreedingPanel state={state} dispatch={handleDispatch} />
+            </div>
+            <div className={activeTab === 'economy' ? 'block' : 'hidden lg:block'}>
+              <EconomyPanel state={state} dispatch={handleDispatch} />
+            </div>
+          </div>
+
+          <div className="lg:col-span-4 space-y-4">
+            <GoalsCard state={state} />
+            <EventsLog events={state.events} />
+          </div>
+        </div>
+
+        <footer className="text-center text-xs text-amber-800/50 py-4">
+          Henhouse Haven — chickens, ducks, goats, breeding & farm economics. Auto-saves.
         </footer>
       </div>
     </div>
+  );
+};
+
+const GoalsCard: React.FC<{ state: GameState }> = ({ state }) => (
+  <section className="panel rounded-2xl p-4">
+    <h2 className="panel-title">Homestead goals</h2>
+    <ul className="text-sm space-y-2 text-amber-900/80">
+      <Goal label="Reputation" current={state.reputation} target={VICTORY_REPUTATION} />
+      <Goal label="Revenue" current={state.totalRevenue} target={VICTORY_REVENUE} prefix="$" />
+      <Goal label="Days tended" current={state.day} target={VICTORY_DAYS} />
+      <Goal label="Species kept" current={new Set(state.animals.map((a) => a.species)).size} target={3} />
+    </ul>
+    <p className="text-xs text-amber-700/60 mt-3">
+      Breed for premium egg colors, diversify into ducks and goats, and sign CSA subscribers for steady income.
+    </p>
+  </section>
+);
+
+const Goal: React.FC<{ label: string; current: number; target: number; prefix?: string }> = ({
+  label,
+  current,
+  target,
+  prefix = '',
+}) => {
+  const pct = Math.min(100, (current / target) * 100);
+  return (
+    <li>
+      <div className="flex justify-between text-xs mb-1">
+        <span>{label}</span>
+        <span>{prefix}{Math.floor(current)} / {prefix}{target}</span>
+      </div>
+      <div className="h-2 rounded-full bg-amber-100 overflow-hidden">
+        <div className="h-full rounded-full bg-amber-500/80" style={{ width: `${pct}%` }} />
+      </div>
+    </li>
   );
 };
 

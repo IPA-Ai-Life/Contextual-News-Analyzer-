@@ -1,20 +1,22 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Henhouse Haven
 
-# Run and deploy your AI Studio app
+A cozy small-homestead strategy game: chickens, ducks, goats, dogs, cats, breeding genetics, housing types, and farm economics.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1w9-k9FBzjq8SZtOFWBrWBWp1ynzJJpK8
+- **20 chicken breeds** plus ducks, dairy goats, livestock guardian dogs, and barn cats
+- **8 housing types** — coops, tractors, pole barn, duck house & pond, goat shed, brooder, incubator
+- **Breeding loop** — fertile eggs, incubator or broody hatching, genetics (egg color, production, vitality)
+- **Economy** — seasonal demand, weekend market bonus, CSA subscriptions, expenses tracking, cheese making
+- **5 daily actions** — manage a realistic small operation without overwhelm
 
-## Run Locally
+## Run
 
-**Prerequisites:**  Node.js
+```bash
+npm install
+npm run dev
+```
 
+## Win condition
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+80 reputation, $900 revenue, 150 days, and at least 3 species on the homestead.
