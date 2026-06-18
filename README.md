@@ -1,35 +1,22 @@
 # Henhouse Haven
 
-A cozy, realistic small-flock chicken keeping strategy game built with React and Vite.
+A cozy small-homestead strategy game: chickens, ducks, goats, dogs, cats, breeding genetics, housing types, and farm economics.
 
-## Play
+## Features
 
-Manage a backyard egg operation day by day: choose breeds, tend the coop, balance feed costs, and sell eggs at your farm stand.
+- **20 chicken breeds** plus ducks, dairy goats, livestock guardian dogs, and barn cats
+- **8 housing types** — coops, tractors, pole barn, duck house & pond, goat shed, brooder, incubator
+- **Breeding loop** — fertile eggs, incubator or broody hatching, genetics (egg color, production, vitality)
+- **Economy** — seasonal demand, weekend market bonus, CSA subscriptions, expenses tracking, cheese making
+- **5 daily actions** — manage a realistic small operation without overwhelm
 
-### Features
-
-- **12 real-world breeds** — Rhode Island Red, Buff Orpington, Marans, Easter Egger, Silkie, and more, each with accurate temperament, climate tolerance, and egg traits
-- **Daily strategy** — four actions per day: clean, feed, water, collect, health checks, and sales
-- **Seasonal simulation** — spring broodiness, summer heat, fall molting, winter laying slowdown
-- **Small-operation economics** — feed bills, premium egg colors, coop upgrades, predator fencing
-- **Auto-save** — progress stored in your browser
-
-## Run locally
+## Run
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the URL shown in the terminal (usually `http://localhost:5173`).
+## Win condition
 
-## Build
-
-```bash
-npm run build
-npm run preview
-```
-
-## Goal
-
-Reach 75 reputation, $400 in total revenue, and 120 days of careful flock management to win.
+80 reputation, $900 revenue, 150 days, and at least 3 species on the homestead.

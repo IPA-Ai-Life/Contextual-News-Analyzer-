@@ -1,14 +1,24 @@
-import type { GameState, Inventory } from '../types';
-import { ACTIONS_PER_DAY, STARTING_FEED_LBS, STARTING_MONEY } from './constants';
+import type { GameState, Housing } from '../types';
+import {
+  ACTIONS_PER_DAY,
+  STARTING_DUCK_FEED,
+  STARTING_HAY,
+  STARTING_LAYER_FEED,
+  STARTING_MONEY,
+  emptyEggs,
+} from './constants';
 
-const emptyEggs = (): Inventory['eggs'] => ({
-  brown: 0,
-  cream: 0,
-  white: 0,
-  blue: 0,
-  green: 0,
-  chocolate: 0,
-});
+export function createStarterHousing(): Housing {
+  return {
+    id: 'coop-main',
+    typeId: 'backyard-coop',
+    cleanliness: 85,
+    waterLevel: 90,
+    autoWaterer: false,
+    dustBath: false,
+    predatorFence: false,
+  };
+}
 
 export function createInitialState(): GameState {
   return {
@@ -16,28 +26,36 @@ export function createInitialState(): GameState {
     season: 'spring',
     money: STARTING_MONEY,
     reputation: 10,
-    coopCleanliness: 85,
-    waterLevel: 90,
-    chickens: [],
-    coop: {
-      capacity: 8,
-      runSize: 'small',
-      nestingBoxes: 3,
-      autoWaterer: false,
-      dustBath: false,
-      predatorFence: false,
-    },
+    animals: [],
+    housings: [createStarterHousing()],
     inventory: {
-      feedLbs: STARTING_FEED_LBS,
+      layerFeedLbs: STARTING_LAYER_FEED,
+      duckFeedLbs: STARTING_DUCK_FEED,
+      hayBales: STARTING_HAY,
       eggs: emptyEggs(),
+      duckEggs: 0,
+      milkJugs: 0,
+      cheeseBlocks: 0,
       medicine: 0,
+      fertileEggs: [],
+    },
+    incubations: [],
+    economy: {
+      totalRevenue: 0,
+      totalExpenses: 0,
+      feedExpenses: 0,
+      upkeepExpenses: 0,
+      lastDayRevenue: 0,
+      lastDayExpenses: 0,
+      marketMultiplier: 1,
+      csaSubscribers: 0,
     },
     events: [
       {
         id: 'welcome',
         day: 1,
         message:
-          'Welcome to Henhouse Haven — a small backyard operation. Start with a few pullets, keep the coop tidy, and build a loyal egg stand.',
+          'Welcome to your small homestead! Start with a few pullets, then expand into ducks, dairy goats, and breeding. Weekend markets pay better.',
         type: 'info',
       },
     ],

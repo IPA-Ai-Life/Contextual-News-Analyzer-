@@ -1,12 +1,16 @@
-import type { EggColor } from '../types';
+import type { EggColor, Inventory, Season, Species } from '../types';
 
-export const ACTIONS_PER_DAY = 4;
-export const STARTING_MONEY = 280;
-export const STARTING_FEED_LBS = 40;
-export const FEED_PRICE_PER_LB = 0.45;
+export const ACTIONS_PER_DAY = 5;
+export const STARTING_MONEY = 320;
+export const STARTING_LAYER_FEED = 40;
+export const STARTING_DUCK_FEED = 0;
+export const STARTING_HAY = 2;
+
+export const LAYER_FEED_PRICE = 0.45;
+export const DUCK_FEED_PRICE = 0.52;
+export const HAY_BALE_PRICE = 6;
 export const MEDICINE_PRICE = 18;
-export const COOP_CLEAN_DECAY = 8;
-export const WATER_DECAY = 12;
+export const CHEESE_MILK_RATIO = 2; // 2 milk -> 1 cheese
 
 export const EGG_PRICES: Record<EggColor, number> = {
   brown: 0.35,
@@ -17,28 +21,49 @@ export const EGG_PRICES: Record<EggColor, number> = {
   chocolate: 0.75,
 };
 
-export const RUN_UPGRADE_COST: Record<string, number> = {
-  small: 85,
-  medium: 160,
-  large: 280,
-};
+export const DUCK_EGG_PRICE = 0.48;
+export const MILK_PRICE = 4.5;
+export const CHEESE_PRICE = 9;
+export const FERTILE_EGG_BASE = 1.25;
 
-export const RUN_FORAGING_BONUS: Record<string, number> = {
-  none: 0,
-  small: 0.08,
-  medium: 0.15,
-  large: 0.22,
-};
-
-export const RUN_HAPPINESS_BONUS: Record<string, number> = {
-  none: 0,
-  small: 5,
-  medium: 10,
-  large: 15,
-};
-
-export const VICTORY_REPUTATION = 75;
-export const VICTORY_DAYS = 120;
-export const VICTORY_REVENUE = 400;
+export const VICTORY_REPUTATION = 80;
+export const VICTORY_DAYS = 150;
+export const VICTORY_REVENUE = 900;
+export const CSA_UNLOCK_REPUTATION = 25;
+export const CSA_WEEKLY_INCOME = 28;
+export const CSA_SIGNUP_COST = 0;
 
 export const SAVE_KEY = 'henhouseHavenSave';
+
+export const SEASON_MARKET: Record<Season, number> = {
+  spring: 1.05,
+  summer: 0.95,
+  fall: 1.0,
+  winter: 1.15,
+};
+
+export const WEEKEND_BONUS = 1.12;
+
+export const INCUBATION_DAYS: Record<Species, number> = {
+  chicken: 21,
+  duck: 28,
+  goat: 0,
+  dog: 0,
+  cat: 0,
+};
+
+export const BROODER_MAX_AGE = 3;
+
+export function emptyEggs(): Inventory['eggs'] {
+  return { brown: 0, cream: 0, white: 0, blue: 0, green: 0, chocolate: 0 };
+}
+
+export function isWeekend(day: number): boolean {
+  return day % 7 === 6 || day % 7 === 0;
+}
+
+export function speciesFeedType(species: Species): 'layer' | 'duck' | 'hay' {
+  if (species === 'duck') return 'duck';
+  if (species === 'goat') return 'hay';
+  return 'layer';
+}
